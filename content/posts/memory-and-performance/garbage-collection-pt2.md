@@ -1,6 +1,6 @@
 +++
 date = '2025-05-26T21:13:14+04:00'
-draft = true
+draft = false
 title = 'Memory and Performance: Garbage Collection Pt. 2'
 tags = ['go', 'rust', 'software-performance', 'profiling', 'memory', 'arm', 'cpu']
 categories = ['software', 'software-performance']
