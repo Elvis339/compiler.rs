@@ -1,5 +1,5 @@
 +++
-date = '2025-05-26T10:33:25+04:00'
+date = '2025-05-24T10:33:25+04:00'
 draft = false
 title = 'Memory and Performance: Latency'
 tags = ['go', 'rust', 'software-performance', 'profiling', 'memory', 'arm', 'cpu']
