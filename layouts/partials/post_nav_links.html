@@ -1,0 +1,52 @@
+{{- $prev := "" }}
+{{- $next := "" }}
+
+{{/* Check if this post belongs to a series */}}
+{{- if .Params.series }}
+{{/* Get all posts in the same series */}}
+{{- $seriesName := index .Params.series 0 }}
+{{- $seriesPosts := where site.RegularPages "Params.series" "intersect" (slice $seriesName) }}
+
+{{/* Sort series posts by date (oldest first) for proper chronological order */}}
+{{- $seriesPosts = $seriesPosts.ByDate }}
+
+{{/* Find current post index in series */}}
+{{- $currentIndex := 0 }}
+{{- range $index, $post := $seriesPosts }}
+{{- if eq $post.RelPermalink $.RelPermalink }}
+{{- $currentIndex = $index }}
+{{- end }}
+{{- end }}
+
+{{/* Set prev and next based on series order */}}
+{{- if gt $currentIndex 0 }}
+{{- $prev = index $seriesPosts (sub $currentIndex 1) }}
+{{- end }}
+
+{{- if lt $currentIndex (sub (len $seriesPosts) 1) }}
+{{- $next = index $seriesPosts (add $currentIndex 1) }}
+{{- end }}
+
+{{- else }}
+{{/* Default behavior for non-series posts */}}
+{{- $prev = .PrevInSection }}
+{{- $next = .NextInSection }}
+{{- end }}
+
+{{/* Render navigation links */}}
+<nav class="paginav">
+    {{- if $prev }}
+    <a class="prev" href="{{ $prev.Permalink }}">
+        <span class="title">« Prev</span>
+        <br>
+        <span>{{ $prev.Title }}</span>
+    </a>
+    {{- end }}
+    {{- if $next }}
+    <a class="next" href="{{ $next.Permalink }}">
+        <span class="title">Next »</span>
+        <br>
+        <span>{{ $next.Title }}</span>
+    </a>
+    {{- end }}
+</nav>

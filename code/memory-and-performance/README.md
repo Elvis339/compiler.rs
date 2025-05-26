@@ -1,6 +1,6 @@
 # Memory and Performance Analysis Tools
 
-A collection of Go programs for exploring memory management and performance characteristics, created for a series of blog posts on memory optimization and garbage collection behavior.
+A collection of Go programs for exploring memory management and performance characteristics, created for a series of blog posts on memory optimization and garbage collection behavior. These tools demonstrate the impact of memory layout on algorithm performance and provide practical examples for identifying GC bottlenecks using real profiling tools.
 
 ## Quick Start
 
@@ -18,7 +18,7 @@ Removes all compiled executables, GC traces, and profiling data.
 
 ## Available Programs
 
-### Binary Trees
+### Binary Trees (`btree`)
 Demonstrates memory allocation patterns and GC behavior with tree data structures.
 
 **Standard Go runtime:**
@@ -31,26 +31,32 @@ make run EXEC=btree
 make run EXEC=btreex
 ```
 
-### Garbage Collection Analysis
-Programs designed to stress-test garbage collection and analyze GC performance.
+
+### Graph Traversal (`graph`)
+Implements breadth-first search on randomly connected graphs to demonstrate scattered memory access patterns and their impact on garbage collection performance.
 
 **Standard Go runtime:**
 ```bash
-make run EXEC=garbage
+make run EXEC=graph ARGS="-v compact -s 2000000 -p"
 ```
 
 **With Green Tea GC (experimental):**
 ```bash
-make run EXEC=garbagex
+make run EXEC=graphx ARGS="-v compact -s 2000000 -p"
 ```
 
-### Memory Access Patterns
-Tools for analyzing memory access performance and cache behavior.
+**Available flags:**
+- `-v`: Algorithm version (`compact`, `ptr-chasing` (default))
+- `-s`: Number of nodes in the graph (default: 1_000_000)
+- `-p`: Enable CPU and memory profiling
+
+### Memory Access Patterns (`memaccess`)
+Tools for analyzing memory access performance, cache behavior, and the relationship between data structure layout and performance.
 
 **Run with tracing:**
 ```bash
-make run EXEC=memaccess     # Standard runtime
-make run EXEC=memaccessx    # Green Tea GC
+make run EXEC=memaccess ARGS="-v ptr -s 10000000 -p"    # Standard runtime
+make run EXEC=memaccessx ARGS="-v ptr -s 10000000 -p"   # Green Tea GC
 ```
 
 **Run benchmarks:**
@@ -63,25 +69,36 @@ cd cmd/memaccess && go test -bench=. -benchmem -count=6
 cd cmd/memaccess/demo && ./assembly.sh
 ```
 
-## Program Arguments
+**Available flags:**
+- `-v`: Algorithm version (`ptr`, `array` (default))
+- `-s`: Tree size (default: 5_000_000)
+- `-p`: Enable CPU and memory profiling
 
-You can pass arguments to any program using the `ARGS` parameter:
-```bash
-make run EXEC=btree ARGS="25"
-```
+## Profiling and Analysis
 
-## Output and Traces
+### CPU and Memory Profiling
+Running programs with `make run EXEC=<binary>` they generate:
+- `*.pprof` files for CPU and memory profiling
+- Real-time visualization via statsviz (check console output for URL)
+
+### Outputs and traces
 
 - **GC traces:** Saved to `traces/<executable>.gctrace`
-- **Profiling data:** Generated as `*.pprof` files in the project root
+- **Profiling data:** Generated as `<executable>_cpu.pprof` and `<executable>_mem.pprof`
 - **Assembly output:** Generated in `cmd/memaccess/demo/`
 
 ## Requirements
 
-- Go (standard runtime)
-- `gotip` (for experimental Green Tea GC builds)
-- macOS for code signing (optional, skipped on other platforms)
+- **Go 1.23+** (standard runtime)
+- **gotip** (for experimental Green Tea GC builds)
 
 ## Green Tea GC
 
-Some programs include variants built with Go's experimental Green Tea garbage collector (`GOEXPERIMENT=greenteagc`). These variants have an 'x' suffix (e.g., `btreex`, `garbagex`) and can be used to compare performance characteristics between the standard and experimental GC implementations.
+Some programs include variants built with Go's experimental Green Tea garbage collector (`GOEXPERIMENT=greenteagc`). These variants have an 'x' suffix (e.g., `btreex`, `graphx`) and can be used to compare performance characteristics between the standard and experimental GC implementations.
+
+
+## Related Blog Posts
+
+- **Memory and Performance: Latency** - Introduction to memory hierarchy and spatial locality
+- **Memory and Performance: Garbage Collection Pt. 1** - Understanding Go's GC and Green Tea
+- **Memory and Performance: Garbage Collection Pt. 2** - Profiling and optimization techniques

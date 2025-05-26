@@ -3,7 +3,17 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/arl/statsviz"
+	"log"
 	"math/rand"
+	"net"
+	"net/http"
+	"os"
+	"os/signal"
+	"path/filepath"
+	"runtime"
+	"runtime/pprof"
+	"syscall"
 	"time"
 )
 
@@ -127,8 +137,6 @@ func (cbst *contiguousBST) search(val int) bool {
 	return false
 }
 
-const treeSize = 1_000_000
-
 func setup(n int) ([]int, []int) {
 	values := make([]int, n)
 	for i := 0; i < n; i++ {
@@ -143,14 +151,101 @@ func setup(n int) ([]int, []int) {
 	return values, searches
 }
 
-// go run . -v ptr
-// go run . -v array
+func getExecutableName() string {
+	executable, err := os.Executable()
+	if err != nil {
+		return "unknown"
+	}
+	return filepath.Base(executable)
+}
 
+func startStatsvizServer() string {
+	listener, err := net.Listen("tcp", ":0")
+	if err != nil {
+		log.Fatal("Failed to find available port:", err)
+	}
+	p, ok := listener.Addr().(*net.TCPAddr)
+	if !ok {
+		log.Fatal("Failed to find available port")
+	}
+	port := p.Port
+	_ = listener.Close()
+
+	err = statsviz.Register(http.DefaultServeMux)
+	if err != nil {
+		log.Fatal("Failed to register statsviz:", err)
+	}
+
+	go func() {
+		log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), nil))
+	}()
+
+	return fmt.Sprintf("http://localhost:%d/debug/statsviz/", port)
+}
+
+func startProfiling(enable bool, execName string) func() {
+	if !enable {
+		return func() {}
+	}
+
+	// CPU profiling
+	cpuFile, err := os.Create(filepath.Join("traces", fmt.Sprintf("%s_cpu.pprof", execName)))
+	if err != nil {
+		log.Fatal("Failed to create CPU profile file:", err)
+	}
+
+	if err := pprof.StartCPUProfile(cpuFile); err != nil {
+		cpuFile.Close()
+		log.Fatal("Failed to start CPU profiling:", err)
+	}
+
+	// Return cleanup function
+	return func() {
+		pprof.StopCPUProfile()
+		cpuFile.Close()
+
+		// Memory profiling
+		runtime.GC()
+		memFile, err := os.Create(filepath.Join("traces", fmt.Sprintf("%s_mem.pprof", execName)))
+		if err != nil {
+			log.Printf("Failed to create memory profile file: %v", err)
+			return
+		}
+		defer memFile.Close()
+
+		if err := pprof.WriteHeapProfile(memFile); err != nil {
+			log.Printf("Failed to write heap profile: %v", err)
+			return
+		}
+
+		fmt.Printf("Generated: %s_cpu.pprof, %s_mem.pprof\n", execName, execName)
+	}
+}
+
+// Usage examples:
+// go run . -v ptr -s 1000000 -p          # Profile pointer BST with 1M elements
+// go run . -v -s 5000000           # Run array BST with 5M elements (no profiling)
+// go run . -v ptr                        # Default: pointer BST, 5M elements, no profiling
 func main() {
 	version := flag.String("v", "ptr", "BST version: ptr (scattered) or array (contiguous)")
+	treeSize := flag.Int("s", 5_000_000, "Number of elements to insert into the BST")
+	enableProfiling := flag.Bool("p", false, "Enable CPU and memory profiling")
 	flag.Parse()
 
-	values, searches := setup(treeSize)
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
+
+	execName := getExecutableName()
+
+	// Start profiling if enabled
+	stopProfiling := startProfiling(*enableProfiling, execName)
+	defer stopProfiling()
+
+	// Start statsviz HTTP server
+	statsvizURL := startStatsvizServer()
+	fmt.Printf("statsviz server: %s\n", statsvizURL)
+
+	values, searches := setup(*treeSize)
 
 	start := time.Now()
 	switch *version {
@@ -158,21 +253,29 @@ func main() {
 		var root *node
 		for _, val := range values {
 			root = root.insert(val)
+			_ = root
 		}
 
+		s := false
 		for _, search := range searches {
-			root.search(search)
+			s = root.search(search)
+			_ = s
 		}
-		fmt.Printf("BST(%s): %s\n", *version, time.Since(start))
-	default: // "array" case
-		cbst := newContiguousBST(treeSize * 2)
+		fmt.Printf("BST(%s): %s size=%d\n", *version, time.Since(start), *treeSize)
+	default:
+		cbst := newContiguousBST(*treeSize * 2)
 		for _, val := range values {
 			cbst.insert(val)
 		}
 
+		s := false
 		for _, search := range searches {
-			cbst.search(search)
+			s = cbst.search(search)
+			_ = s
 		}
-		fmt.Printf("BST(%s): %s\n", *version, time.Since(start))
+		fmt.Printf("BST(%s): %s size=%d\n", *version, time.Since(start), *treeSize)
 	}
+
+	fmt.Println("Press Ctrl+C to stop the server")
+	<-stop
 }

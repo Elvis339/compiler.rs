@@ -7,9 +7,9 @@ NC := \033[0m # No Color
 BIN_DIR := bin
 TRACE_DIR := traces
 
-.PHONY: check-deps btree btreex garbage garbagex all clean codesign run
+.PHONY: check-deps btree btreex all clean graph graphx codesign run
 
-all: check-deps btree btreex garbage garbagex memaccess memaccessx codesign
+all: check-deps btree btreex memaccess memaccessx graph graphx codesign
 
 check-deps:
 	@for dep in $(REQUIRED_DEPS); do \
@@ -29,14 +29,6 @@ btreex:
 	@echo "$(GREEN)Building btreex with experimental flag...$(NC)"
 	GOEXPERIMENT=greenteagc gotip build -o $(BIN_DIR)/btreex cmd/binarytrees/main.go
 
-garbage:
-	@echo "$(GREEN)Building garbage without experimental flag...$(NC)"
-	unset GOEXPERIMENT && go build -o $(BIN_DIR)/garbage cmd/garbage/garbage.go
-
-garbagex:
-	@echo "$(GREEN)Building garbagex with experimental flag...$(NC)"
-	GOEXPERIMENT=greenteagc gotip build -o $(BIN_DIR)/garbagex cmd/garbage/garbage.go
-
 memaccess:
 	@echo "$(GREEN)Building memaccess without experimental flag...$(NC)"
 	unset GOEXPERIMENT && go build -o $(BIN_DIR)/memaccess cmd/memaccess/memaccess.go
@@ -44,6 +36,14 @@ memaccess:
 memaccessx:
 	@echo "$(GREEN)Building memaccess with experimental flag...$(NC)"
 	GOEXPERIMENT=greenteagc gotip build -o $(BIN_DIR)/memaccessx cmd/memaccess/memaccess.go
+
+graph:
+	@echo "$(GREEN)Building graph without experimental flag...$(NC)"
+	unset GOEXPERIMENT && go build -o $(BIN_DIR)/graph ./cmd/graph
+
+graphx:
+	@echo "$(GREEN)Building graphx with experimental flag...$(NC)"
+	GOEXPERIMENT=greenteagc gotip build -o $(BIN_DIR)/graphx ./cmd/graph
 
 # Codesign all files in bin directory except .gitkeep
 codesign:
@@ -65,11 +65,13 @@ run:
 	@echo "$(GREEN)Running $(EXEC) with GC tracing enabled...$(NC)"
 	@if [ -z "$(ARGS)" ]; then \
 		GODEBUG=gctrace=1 $(BIN_DIR)/$(EXEC) 2>$(TRACE_DIR)/$(EXEC).gctrace; \
+		echo "$(GREEN)GC trace saved to $(TRACE_DIR)/$(EXEC).gctrace$(NC)"; \
 	else \
 		echo "$(GREEN)Arguments: $(ARGS)$(NC)"; \
-		GODEBUG=gctrace=1 $(BIN_DIR)/$(EXEC) $(ARGS) 2>$(TRACE_DIR)/$(EXEC).gctrace; \
+		TRACE_SUFFIX=$$(echo "$(ARGS)" | sed 's/[^a-zA-Z0-9]/_/g' | sed 's/__*/_/g' | sed 's/^_//' | sed 's/_$$//'); \
+		GODEBUG=gctrace=1 $(BIN_DIR)/$(EXEC) $(ARGS) 2>$(TRACE_DIR)/$(EXEC)_$$TRACE_SUFFIX.gctrace; \
+		echo "$(GREEN)GC trace saved to $(TRACE_DIR)/$(EXEC)_$$TRACE_SUFFIX.gctrace$(NC)"; \
 	fi
-	@echo "$(GREEN)GC trace saved to $(TRACE_DIR)/$(EXEC).gctrace$(NC)"
 
 # Clean all files in bin/ except bin dir and .gitkeep
 clean:

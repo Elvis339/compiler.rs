@@ -3,6 +3,7 @@ languageCode = 'en-us'
 title = 'The purpose of knowledge is action.'
 theme = 'PaperMod'
 
+# Sort posts by date in ascending order (oldest first)
 [params]
 env = "production"
 title = "compiler.rs"
