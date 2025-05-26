@@ -57,7 +57,7 @@ func startProfiling(enable bool, execName string) func() {
 // make run EXEC=graph ARGS="-v compact -s 100000 -p"
 func main() {
 	version := flag.String("v", "", "Add compact flag if you want to run optimized version")
-	size := flag.Int("s", 100000, "Number of nodes in the graph")
+	size := flag.Int("s", 1_000_000, "Number of nodes in the graph")
 	enableProfiling := flag.Bool("p", false, "Enable CPU and memory profiling")
 	flag.Parse()
 
@@ -65,7 +65,7 @@ func main() {
 
 	v := *version
 	if len(v) == 0 {
-		v = "ptr-chasing graph"
+		v = "ptr-chasing"
 	}
 
 	fmt.Printf("Configuration:\n")
@@ -74,7 +74,7 @@ func main() {
 	fmt.Printf("  Profiling: %t\n", *enableProfiling)
 	fmt.Printf("\n")
 
-	stopProfiling := startProfiling(*enableProfiling, execName)
+	stopProfiling := startProfiling(*enableProfiling, fmt.Sprintf("%s_%s", execName, v))
 	defer stopProfiling()
 
 	start := time.Now()

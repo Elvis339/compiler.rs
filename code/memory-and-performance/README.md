@@ -37,13 +37,18 @@ Implements breadth-first search on randomly connected graphs to demonstrate scat
 
 **Standard Go runtime:**
 ```bash
-make run EXEC=graph
+make run EXEC=graph ARGS="-v compact -s 2000000 -p"
 ```
 
 **With Green Tea GC (experimental):**
 ```bash
-make run EXEC=graphx
+make run EXEC=graphx ARGS="-v compact -s 2000000 -p"
 ```
+
+**Available flags:**
+- `-v`: Algorithm version (`compact`, `ptr-chasing` (default))
+- `-s`: Number of nodes in the graph (default: 1_000_000)
+- `-p`: Enable CPU and memory profiling
 
 ### Memory Access Patterns (`memaccess`)
 Tools for analyzing memory access performance, cache behavior, and the relationship between data structure layout and performance.

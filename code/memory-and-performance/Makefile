@@ -65,11 +65,13 @@ run:
 	@echo "$(GREEN)Running $(EXEC) with GC tracing enabled...$(NC)"
 	@if [ -z "$(ARGS)" ]; then \
 		GODEBUG=gctrace=1 $(BIN_DIR)/$(EXEC) 2>$(TRACE_DIR)/$(EXEC).gctrace; \
+		echo "$(GREEN)GC trace saved to $(TRACE_DIR)/$(EXEC).gctrace$(NC)"; \
 	else \
 		echo "$(GREEN)Arguments: $(ARGS)$(NC)"; \
-		GODEBUG=gctrace=1 $(BIN_DIR)/$(EXEC) $(ARGS) 2>$(TRACE_DIR)/$(EXEC).gctrace; \
+		TRACE_SUFFIX=$$(echo "$(ARGS)" | sed 's/[^a-zA-Z0-9]/_/g' | sed 's/__*/_/g' | sed 's/^_//' | sed 's/_$$//'); \
+		GODEBUG=gctrace=1 $(BIN_DIR)/$(EXEC) $(ARGS) 2>$(TRACE_DIR)/$(EXEC)_$$TRACE_SUFFIX.gctrace; \
+		echo "$(GREEN)GC trace saved to $(TRACE_DIR)/$(EXEC)_$$TRACE_SUFFIX.gctrace$(NC)"; \
 	fi
-	@echo "$(GREEN)GC trace saved to $(TRACE_DIR)/$(EXEC).gctrace$(NC)"
 
 # Clean all files in bin/ except bin dir and .gitkeep
 clean:

@@ -5,6 +5,8 @@ import (
 	"testing"
 )
 
+// go test -bench=. -count=3
+
 func BenchmarkGraph(b *testing.B) {
 	graph := createGraph(2_000_000)
 	b.ResetTimer()

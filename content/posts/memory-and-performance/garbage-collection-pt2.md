@@ -5,10 +5,12 @@ title = 'Memory and Performance: Garbage Collection Pt. 2'
 tags = ['go', 'rust', 'software-performance', 'profiling', 'memory', 'arm', 'cpu']
 categories = ['software', 'software-performance']
 series = ['memory-and-performance']
-description = "Profiling and tinkering with memory through the lens of Go's experimental Green Tea garbage-collector. Experimenting with tools available to gain performance oriented signals."
+description = "Analyzing and tinkering with memory through lens of Go's experimental Green Tea garbage-collector. Experimenting with tools available to gain performance oriented signals."
 +++
 
-For the sake of the article length, I won't walk through running every command here. Instead, I've documented everything to make it seamless for you to reproduce these results yourself. I encourage you to run the profiling tools and discover the patterns firsthand.
+For the sake of the article length, I won't walk through running every command here. 
+
+Instead, I've documented everything to make it seamless for you to reproduce these results yourself. I encourage you to run the profiling tools and discover the patterns firsthand.
 
 **All code, scripts, and detailed instructions are available [here](https://github.com/Elvis339/compiler.rs/blob/main/code/memory-and-performance/README.md#graph)**
 
@@ -20,7 +22,7 @@ For the sake of the article length, I won't walk through running every command h
 
 # Reading GC Traces
 
-We have a [graph](https://github.com) implementation that creates 2M random nodes and performs BFS by visiting all nodes. 
+We have a [graph](https://github.com/Elvis339/compiler.rs/blob/fb3031882458b4f035584024a560f9997076a909/code/memory-and-performance/cmd/graph/graph.go) implementation that creates 2M random nodes and performs BFS by visiting all nodes. 
 Running `make run EXEC=graph` sets `GODEBUG=gctrace=1`, which hints to any running Go application to start garbage collection tracing.
 
 **Current Go GC trace output:**
@@ -100,4 +102,86 @@ The same implementation produces different performance characteristics simply by
 
 ## What If You Can't Change the GC Algorithm?
 
-While Green Tea solves the spatial locality problem at the GC level, we can still achieve significant improvements by designing your data structures and allocation patterns to be GC-friendly.
+We can still achieve significant improvements by designing your data structures and allocation patterns to be GC-friendly.
+
+We have a [compact graph](https://github.com/Elvis339/compiler.rs/blob/fb3031882458b4f035584024a560f9997076a909/code/memory-and-performance/cmd/graph/compact.go) implementation which is using [sync.Pool](https://pkg.go.dev/sync#Pool) for reusing temporary allocations (queue and visited map). 
+This improves GC performance because it eliminates repeated allocations in the hot path - instead of creating new slices and maps on every BFS call, we reuse pre-allocated objects from the pool, dramatically reducing allocation pressure and giving the garbage collector fewer objects to track and clean up.
+
+**Compact GC Trace**
+```
+gc 1 @0.000s 23%: 0.007+8.8+0.014 ms clock, 0.061+0.076/17/16+0.11 ms cpu, 62->68->68 MB, 62 MB goal, 0 MB stacks, 0 MB globals, 8 P
+gc 2 @0.030s 8%: 0.025+3.6+0.010 ms clock, 0.20+0.11/6.5/13+0.084 ms cpu, 124->130->130 MB, 137 MB goal, 0 MB stacks, 0 MB globals, 8 P
+gc 3 @0.216s 2%: 0.032+10+0.009 ms clock, 0.26+0/20/0.10+0.077 ms cpu, 246->253->194 MB, 261 MB goal, 0 MB stacks, 0 MB globals, 8 P
+gc 4 @0.601s 1%: 0.034+9.5+0.025 ms clock, 0.27+0/14/5.1+0.20 ms cpu, 375->375->245 MB, 390 MB goal, 0 MB stacks, 0 MB globals, 8 P
+gc 5 @1.820s 0%: 0.064+0.36+0.006 ms clock, 0.51+0/0.25/0.33+0.053 ms cpu, 371->371->64 MB, 490 MB goal, 0 MB stacks, 0 MB globals, 8 P (forced)
+```
+
+**Pointer Chasing Implementation**
+```
+gc 1 @0.000s 18%: 0.027+2.8+0.011 ms clock, 0.22+0.12/5.1/4.7+0.094 ms cpu, 16->19->18 MB, 17 MB goal, 0 MB stacks, 0 MB globals, 8 P
+gc 2 @0.012s 9%: 0.033+3.8+0.011 ms clock, 0.26+0.047/7.1/13+0.092 ms cpu, 33->36->36 MB, 37 MB goal, 0 MB stacks, 0 MB globals, 8 P
+gc 3 @0.031s 8%: 0.036+6.0+0.026 ms clock, 0.29+0.25/11/27+0.21 ms cpu, 63->70->69 MB, 73 MB goal, 0 MB stacks, 0 MB globals, 8 P
+gc 4 @0.092s 6%: 0.049+15+0.036 ms clock, 0.39+0.081/31/76+0.28 ms cpu, 119->121->115 MB, 140 MB goal, 0 MB stacks, 0 MB globals, 8 P
+gc 5 @0.330s 7%: 0.031+89+0.024 ms clock, 0.25+1.1/177/428+0.19 ms cpu, 196->205->166 MB, 230 MB goal, 0 MB stacks, 0 MB globals, 8 P
+gc 6 @0.802s 7%: 0.063+155+0.025 ms clock, 0.50+0/311/798+0.20 ms cpu, 283->318->241 MB, 332 MB goal, 0 MB stacks, 0 MB globals, 8 P
+gc 7 @1.426s 6%: 0.037+156+0.019 ms clock, 0.29+0/312/780+0.15 ms cpu, 436->436->256 MB, 483 MB goal, 0 MB stacks, 0 MB globals, 8 P
+gc 8 @2.780s 3%: 0.041+0.21+0.004 ms clock, 0.33+0/0.19/0.040+0.037 ms cpu, 353->353->0 MB, 513 MB goal, 0 MB stacks, 0 MB globals, 8 P (forced)
+```
+
+Looking at the GC traces, the compact version performs 3 fewer GC cycles (5 vs 8), but the traces seem similar.
+
+Benchmarks should be your first resort for performance indicators. These [benchmarks](https://github.com/Elvis339/compiler.rs/blob/fb3031882458b4f035584024a560f9997076a909/code/memory-and-performance/cmd/graph/bench_test.go) show about **477,828,000 ns/op difference** on my machine in favor of the compact implementation, which translates to roughly **478ms faster per operation**. 
+
+### Pprof Analysis
+If we run `go tool pprof traces/graph_compact_cpu.pprof` in one terminal and `go tool pprof traces/graph_ptr-chasing_cpu.pprof` in another, we're observing different CPU profiles.
+
+**Left Terminal (Compact Implementation):**
+```
+(pprof) top10
+Showing nodes accounting for 1340ms, 90.07% of 1510ms total
+Showing top 10 nodes out of 67
+flat  flat%   sum%        cum   cum%
+370ms 25.83% 25.83%      480ms 31.79%  runtime.mapaccess1_fast64
+290ms 19.21% 45.03%      290ms 19.21%  runtime.(remap).dverflow (inline)
+240ms 15.89% 60.93%     1140ms 75.50%  main.(*compactGraph).bfs
+150ms  9.93% 70.86%      150ms  9.93%  runtime.madvise
+80ms  5.30% 76.16%      120ms  7.95%  runtime.scanobject
+50ms  3.31% 79.47%      370ms 25.83%  runtime.mapaccess_fast64
+50ms  3.31% 82.78%       50ms  3.31%  runtime.memclrNoHeapPointers
+40ms  2.65% 85.43%       40ms  2.65%  runtime.heapBitsSetType
+60ms  2.65% 88.08%       60ms  2.65%  runtime.pthread-cond-signal
+30ms  1.99% 90.07%       30ms  1.99%  main.createCompactGraph
+```
+
+**Right Terminal (Pointer-Chasing Implementation):**
+```
+(pprof) top10
+Showing nodes accounting for 3720ms, 79.49% of 4680ms total
+Dropped 57 nodes (cum <= 23.40ms)
+Showing top 10 nodes out of 83
+flat  flat%   sum%        cum   cum%
+940ms 20.09% 20.09%      940ms 20.09%  runtime.madvise
+570ms 12.18% 32.26%      760ms 14.96%  runtime.mapaccess1_fast64
+530ms 11.32% 43.59%     1350ms 32.85%  main.bfs
+530ms 11.32% 54.91%     1980ms 40.60%  runtime.scanobject
+390ms  8.33% 63.25%      390ms 17.50%  runtime.greyobject
+250ms  5.34% 68.59%      250ms  5.34%  runtime.(▸span).heapBitsSmallForAddr
+160ms  3.42% 72.01%      160ms  3.42%  runtime.(▸htstack).pop
+130ms  2.78% 74.79%      130ms  2.78%  runtime.dverflow (inline)
+110ms  2.35% 77.14%      600ms  8.55%  runtime.getptmty
+110ms  2.35% 79.49%      110ms  2.35%  runtime.memclrNoHeapPointers
+```
+**Takeaway**
+
+The pointer-chasing implementation shows performance degradation compared to compact implementation:
+- **20.09%** of total execution spent on [madvise](https://man7.org/linux/man-pages/man2/madvise.2.html) syscall, indicating the GC is working hard to manage fragmented memory
+- **40.60%** of total execution spent on `runtime.scanobject` (object scanning during GC marking)
+- **32.85%** of total execution spent on algorithm (`main.bfs`)
+
+In contrast, the compact implementation shows:
+- **9.93%** spent on `runtime.madvise` (50% reduction)
+- **5.30%** spent on `runtime.scanobject` (87% reduction)
+- **75.50%** spent in the actual algorithm (`main.(*compactGraph).bfs`)
+
+# Next
+We started somewhere in the middle, then went up the stack (pun intended) now we're going to go a bit deeper and explore virtual memory, address translation, and memory fragmentation. Understanding these lower-level concepts should complete the picture.
