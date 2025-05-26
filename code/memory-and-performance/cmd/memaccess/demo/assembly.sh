@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-go tool compile -S demo.go > go_assembly.s
 go build -o demo demo.go
 
 objdump -d demo > assembly.s
