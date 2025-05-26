@@ -86,7 +86,7 @@ Let's explore ways to identify memory latencies in Go.
 
 We have two implementations of binary search tree. One implementation is recursive memory-unaware and second is memory-aware by keeping data in contagious block and having predictable access patterns.
 
-Full implementation can be found here: https://github.com/Elvis339/compiler.rs/code/memory-and-performance/cmd/memaccess/memaccess.go
+Full implementation can be found here: https://github.com/Elvis339/compiler.rs/blob/main/code/memory-and-performance/cmd/memaccess/memaccess.go
 
 **Pointer Base BST**
 ```go
@@ -254,7 +254,7 @@ Unfortunately, Go's pprof tool doesn't provide clear insights into memory access
 
 While `perf` on Linux provides excellent memory profiling capabilities, we'll use assembly analysis to understand the performance differences:
 
-[Assembly script](https://github.com/Elvis339/compiler.rs/code/memory-and-performance/cmd/memaccess/demo/assembly.sh).
+[Assembly script](https://github.com/Elvis339/compiler.rs/blob/main/code/memory-and-performance/cmd/memaccess/demo/assembly.sh).
 
 ## Assembly Reveals the Truth
 
