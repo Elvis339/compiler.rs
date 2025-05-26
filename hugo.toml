@@ -1,0 +1,87 @@
+baseURL = 'https://compiler.rs'
+languageCode = 'en-us'
+title = 'The purpose of knowledge is action.'
+theme = 'PaperMod'
+
+[params]
+env = "production"
+title = "compiler.rs"
+description = "Insights on curisoity, tinkering with software performance, profiling and distributed systems."
+keywords = [
+    "rust",
+    "go",
+    "high performance",
+    "programming",
+    "distributed systems",
+    "profiling",
+    "low latency",
+    "machine learning",
+    "high performance computing",
+    "software performance analysis",
+    "blockchain",
+]
+author = "Elvis S."
+DateFormat = "January 2, 2006"
+defaultTheme = "auto"
+disableThemeToggle = false
+ShowReadingTime = true
+ShowShareButtons = true
+ShowPostNavLinks = true
+ShowBreadCrumbs = true
+ShowCodeCopyButtons = true
+ShowWordCount = true
+ShowToc = true
+disableSpecial1stPost = false
+disableScrollToTop = false
+comments = false
+hidemeta = false
+hideSummary = false
+showtoc = false
+tocopen = false
+
+[params.profileMode]
+enabled = false
+
+[params.homeInfoParams]
+Title = "Welcome to compiler.rs"
+Content = "I envision this as a way to engage more with the community and find like-minded individuals. This isn't advice—rather, I'm expressing my curiosity while improving my communication skills. I expect to be corrected, so please feel free to reach out at elvis@compiler.rs. (Fun fact: the .rs domain belongs to my home country, the Republic of Serbia, but also represents the Rust ecosystem—my favorite language!)"
+
+[[params.socialIcons]]
+name = "github"
+url = "https://github.com/Elvis339"
+
+[[params.socialIcons]]
+name = "linkedin"
+url = "https://www.linkedin.com/in/elvis-s/"
+
+[menu]
+[[menu.main]]
+identifier = "categories"
+name = "categories"
+url = "/categories/"
+weight = 10
+
+[[menu.main]]
+identifier = "tags"
+name = "tags"
+url = "/tags/"
+weight = 20
+
+[[menu.main]]
+identifier = "archives"
+name = "archives"
+url = "/archives/"
+weight = 30
+
+[markup]
+[markup.highlight]
+noClasses = false
+codeFences = true
+guessSyntax = true
+lineNos = true
+style = "github"
+
+[taxonomies]
+category = "categories"
+tag = "tags"
+series = "series"

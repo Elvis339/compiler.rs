@@ -1,0 +1,227 @@
+--- ptr.s	2025-05-25 12:50:54
++++ array.s	2025-05-25 12:50:54
+@@ -1,91 +1,69 @@
+-0000000100099850 <_main.(*node).search>:
+-100099850: f9400b90    	ldr	x16, [x28, #16]
+-100099854: eb3063ff    	cmp	sp, x16
+-100099858: 54000369    	b.ls	0x1000998c4 <_main.(*node).search+0x74>
+-10009985c: f81e0ffe    	str	x30, [sp, #-32]!
+-100099860: f81f83fd    	stur	x29, [sp, #-8]
+-100099864: d10023fd    	sub	x29, sp, #8
+-100099868: b4000260    	cbz	x0, 0x1000998b4 <_main.(*node).search+0x64>
+-10009986c: f9400002    	ldr	x2, [x0]
+-100099870: eb02003f    	cmp	x1, x2
+-100099874: 54000180    	b.eq	0x1000998a4 <_main.(*node).search+0x54>
+-100099878: 540000ca    	b.ge	0x100099890 <_main.(*node).search+0x40>
+-10009987c: f9400400    	ldr	x0, [x0, #8]                                # Based on struct field ordering CPU loads data from offset 8 into register x0 i.e: Load node.left ptr
+-100099880: 97fffff4    	bl	0x100099850 <_main.(*node).search>          # Recurse func call overhead
+-100099884: a97ffbfd    	ldp	x29, x30, [sp, #-8]
+-100099888: 910083ff    	add	sp, sp, #32
+-10009988c: d65f03c0    	ret
+-100099890: f9400800    	ldr	x0, [x0, #16]                               # Same as 10009987c but now offset is #16. Load node.right ptr
+-100099894: 97ffffef    	bl	0x100099850 <_main.(*node).search>          # Recurse func call overhead
+-100099898: a97ffbfd    	ldp	x29, x30, [sp, #-8]
+-10009989c: 910083ff    	add	sp, sp, #32
+-1000998a0: d65f03c0    	ret
+-1000998a4: b24003e0    	orr	x0, xzr, #0x1
+-1000998a8: a97ffbfd    	ldp	x29, x30, [sp, #-8]
+-1000998ac: 910083ff    	add	sp, sp, #32
+-1000998b0: d65f03c0    	ret
+-1000998b4: aa1f03e0    	mov	x0, xzr
+-1000998b8: a97ffbfd    	ldp	x29, x30, [sp, #-8]
+-1000998bc: 910083ff    	add	sp, sp, #32
+-1000998c0: d65f03c0    	ret
+-1000998c4: f90007e0    	str	x0, [sp, #8]
+-1000998c8: f9000be1    	str	x1, [sp, #16]
+-1000998cc: aa1e03e3    	mov	x3, x30
+-1000998d0: 97ff430c    	bl	0x10006a500 <_runtime.morestack_noctxt.abi0>
+-1000998d4: f94007e0    	ldr	x0, [sp, #8]
+-1000998d8: f9400be1    	ldr	x1, [sp, #16]
+-1000998dc: 17ffffdd    	b	0x100099850 <_main.(*node).search>
+
++0000000100099a40 <_main.(*contiguousBST).search>:
++100099a40: f9400b90    	ldr	x16, [x28, #16]
++100099a44: eb3063ff    	cmp	sp, x16
++100099a48: 540004a9    	b.ls	0x100099adc <_main.(*contiguousBST).search+0x9c>
++100099a4c: f81e0ffe    	str	x30, [sp, #-32]!
++100099a50: f81f83fd    	stur	x29, [sp, #-8]
++100099a54: d10023fd    	sub	x29, sp, #8
++100099a58: aa1f03e2    	mov	x2, xzr
++100099a5c: f9400403    	ldr	x3, [x0, #8]
++100099a60: eb03005f    	cmp	x2, x3
++100099a64: 540002ca    	b.ge	0x100099abc <_main.(*contiguousBST).search+0x7c>
++100099a68: f9401003    	ldr	x3, [x0, #32]
++100099a6c: eb03005f    	cmp	x2, x3
++100099a70: 540002e2    	b.hs	0x100099acc <_main.(*contiguousBST).search+0x8c>
++100099a74: f9400c03    	ldr	x3, [x0, #24]
++100099a78: 38626863    	ldrb	w3, [x3, x2]
++100099a7c: 36000203    	tbz	w3, #0, 0x100099abc <_main.(*contiguousBST).search+0x7c>
++100099a80: f9400003    	ldr	x3, [x0]
++100099a84: f8627863    	ldr	x3, [x3, x2, lsl  #3]
++100099a88: eb03003f    	cmp	x1, x3
++100099a8c: 54000100    	b.eq	0x100099aac <_main.(*contiguousBST).search+0x6c>
++100099a90: 5400008a    	b.ge	0x100099aa0 <_main.(*contiguousBST).search+0x60>
++100099a94: d37ff842    	lsl	x2, x2, #1
++100099a98: 91000442    	add	x2, x2, #1
++100099a9c: 17fffff0    	b	0x100099a5c <_main.(*contiguousBST).search+0x1c>
++100099aa0: d37ff843    	lsl	x3, x2, #1
++100099aa4: 91000862    	add	x2, x3, #2
++100099aa8: 17ffffed    	b	0x100099a5c <_main.(*contiguousBST).search+0x1c>
++100099aac: b24003e0    	orr	x0, xzr, #0x1
++100099ab0: a97ffbfd    	ldp	x29, x30, [sp, #-8]
++100099ab4: 910083ff    	add	sp, sp, #32
++100099ab8: d65f03c0    	ret
++100099abc: aa1f03e0    	mov	x0, xzr
++100099ac0: a97ffbfd    	ldp	x29, x30, [sp, #-8]
++100099ac4: 910083ff    	add	sp, sp, #32
++100099ac8: d65f03c0    	ret
++100099acc: aa0203e0    	mov	x0, x2
++100099ad0: aa0303e1    	mov	x1, x3
++100099ad4: 97ff4be3    	bl	0x10006ca60 <_runtime.panicIndex>
++100099ad8: d503201f    	nop
++100099adc: f90007e0    	str	x0, [sp, #8]
++100099ae0: f9000be1    	str	x1, [sp, #16]
++100099ae4: aa1e03e3    	mov	x3, x30
++100099ae8: 97ff4286    	bl	0x10006a500 <_runtime.morestack_noctxt.abi0>
++100099aec: f94007e0    	ldr	x0, [sp, #8]
++100099af0: f9400be1    	ldr	x1, [sp, #16]
++100099af4: 17ffffd3    	b	0x100099a40 <_main.(*contiguousBST).search>
++		...
+ 
+-00000001000998e0 <_main.(*contiguousBST).insert>:
+-1000998e0: f9400b90    	ldr	x16, [x28, #16]
+-1000998e4: eb3063ff    	cmp	sp, x16
+-1000998e8: 540009a9    	b.ls	0x100099a1c <_main.(*contiguousBST).insert+0x13c>
+-1000998ec: f81e0ffe    	str	x30, [sp, #-32]!
+-1000998f0: f81f83fd    	stur	x29, [sp, #-8]
+-1000998f4: d10023fd    	sub	x29, sp, #8
+-1000998f8: f9401802    	ldr	x2, [x0, #48]
+-1000998fc: b40000a2    	cbz	x2, 0x100099910 <_main.(*contiguousBST).insert+0x30>
+-100099900: f9400402    	ldr	x2, [x0, #8]
+-100099904: f9400003    	ldr	x3, [x0]
+-100099908: aa1f03e4    	mov	x4, xzr
+-10009990c: 14000018    	b	0x10009996c <_main.(*contiguousBST).insert+0x8c>
+-100099910: f9400402    	ldr	x2, [x0, #8]
+-100099914: f100005f    	cmp	x2, #0
+-100099918: 54000249    	b.ls	0x100099960 <_main.(*contiguousBST).insert+0x80>
+-10009991c: f9400002    	ldr	x2, [x0]
+-100099920: f9000041    	str	x1, [x2]
+-100099924: f9401002    	ldr	x2, [x0, #32]
+-100099928: f100005f    	cmp	x2, #0
+-10009992c: 54000149    	b.ls	0x100099954 <_main.(*contiguousBST).insert+0x74>
+-100099930: f9400c01    	ldr	x1, [x0, #24]
+-100099934: b24003e2    	orr	x2, xzr, #0x1
+-100099938: 39000022    	strb	w2, [x1]
+-10009993c: f9401801    	ldr	x1, [x0, #48]
+-100099940: 91000421    	add	x1, x1, #1
+-100099944: f9001801    	str	x1, [x0, #48]
+-100099948: a97ffbfd    	ldp	x29, x30, [sp, #-8]
+-10009994c: 910083ff    	add	sp, sp, #32
+-100099950: d65f03c0    	ret
+-100099954: aa1f03e0    	mov	x0, xzr
+-100099958: aa0003e1    	mov	x1, x0
+-10009995c: 97ff4c41    	bl	0x10006ca60 <_runtime.panicIndex>
+-100099960: aa1f03e0    	mov	x0, xzr
+-100099964: aa0003e1    	mov	x1, x0
+-100099968: 97ff4c3e    	bl	0x10006ca60 <_runtime.panicIndex>
+-10009996c: eb02009f    	cmp	x4, x2
+-100099970: 5400042a    	b.ge	0x1000999f4 <_main.(*contiguousBST).insert+0x114>
+-100099974: f9401005    	ldr	x5, [x0, #32]
+-100099978: eb05009f    	cmp	x4, x5
+-10009997c: 54000482    	b.hs	0x100099a0c <_main.(*contiguousBST).insert+0x12c>
+-100099980: f9400c05    	ldr	x5, [x0, #24]
+-100099984: 386468a6    	ldrb	w6, [x5, x4]
+-100099988: 360001c6    	tbz	w6, #0, 0x1000999c0 <_main.(*contiguousBST).insert+0xe0>
+-10009998c: f8647865    	ldr	x5, [x3, x4, lsl  #3]
+-100099990: eb05003f    	cmp	x1, x5
+-100099994: 5400008a    	b.ge	0x1000999a4 <_main.(*contiguousBST).insert+0xc4>
+-100099998: d37ff884    	lsl	x4, x4, #1
+-10009999c: 91000484    	add	x4, x4, #1
+---
++0000000100099b00 <_main.main>:
++100099b00: f9400b90    	ldr	x16, [x28, #16]
++100099b04: d10e43f1    	sub	x17, sp, #912
++100099b08: eb10023f    	cmp	x17, x16
++100099b0c: 540009a9    	b.ls	0x100099c40 <_main.main+0x140>
++100099b10: d11043f4    	sub	x20, sp, #1040
++100099b14: a93ffa9d    	stp	x29, x30, [x20, #-8]
++100099b18: 9100029f    	mov	sp, x20
++100099b1c: d10023fd    	sub	x29, sp, #8
++100099b20: aa1f03e0    	mov	x0, xzr
++100099b24: d28000a1    	mov	x1, #5
++100099b28: 97ffff0a    	bl	0x100099750 <_main.(*node).insert>
++100099b2c: b24007e1    	orr	x1, xzr, #0x3
++100099b30: 97ffff08    	bl	0x100099750 <_main.(*node).insert>
++100099b34: b2400be1    	orr	x1, xzr, #0x7
++100099b38: 97ffff06    	bl	0x100099750 <_main.(*node).insert>
++100099b3c: b24007e1    	orr	x1, xzr, #0x3
+ 100099b40: 97ffff44    	bl	0x100099850 <_main.(*node).search>
+ 100099b44: 3900efe0    	strb	w0, [sp, #59]
+ 100099b48: 910283f4    	add	x20, sp, #160
+@@ -117,18 +95,7 @@
+ 100099bb0: f901ffe2    	str	x2, [sp, #1016]
+ 100099bb4: 9100f3e2    	add	x2, sp, #60
+ 100099bb8: f901f7e2    	str	x2, [sp, #1000]
+-100099bbc: f90203ff    	str	xzr, [sp, #1024]
+-100099bc0: d28000a1    	mov	x1, #5
+-100099bc4: 910f43e0    	add	x0, sp, #976
+-100099bc8: 97ffff46    	bl	0x1000998e0 <_main.(*contiguousBST).insert>
+-100099bcc: 910f43e0    	add	x0, sp, #976
+-100099bd0: b24007e1    	orr	x1, xzr, #0x3
+-100099bd4: 97ffff43    	bl	0x1000998e0 <_main.(*contiguousBST).insert>
+-100099bd8: 910f43e0    	add	x0, sp, #976
+-100099bdc: b2400be1    	orr	x1, xzr, #0x7
+-100099be0: 97ffff40    	bl	0x1000998e0 <_main.(*contiguousBST).insert>
+-100099be4: 910f43e0    	add	x0, sp, #976
+-100099be8: b24007e1    	orr	x1, xzr, #0x3
++--
+ 100099bec: 97ffff95    	bl	0x100099a40 <_main.(*contiguousBST).search>
+ 100099bf0: 3940efe1    	ldrb	w1, [sp, #59]
+ 100099bf4: 36000201    	tbz	w1, #0, 0x100099c34 <_main.main+0x134>
+@@ -137,3 +104,46 @@
+ 100099c00: 913600a5    	add	x5, x5, #3456
+ 100099c04: f901e3e5    	str	x5, [sp, #960]
+ 100099c08: f0000245    	adrp	x5, 0x1000e4000 <_xpc_date_create_from_current+0x100099d34>
++100099c0c: 9134c0a5    	add	x5, x5, #3376
++100099c10: f901e7e5    	str	x5, [sp, #968]
++100099c14: b000069b    	adrp	x27, 0x10016a000 <_runtime.rodata+0x78>
++100099c18: f9419761    	ldr	x1, [x27, #808]
++100099c1c: 90000260    	adrp	x0, 0x1000e5000 <_xpc_date_create_from_current+0x100099d4c>
++100099c20: 9107e000    	add	x0, x0, #504
++100099c24: 910f03e2    	add	x2, sp, #960
++100099c28: b24003e3    	orr	x3, xzr, #0x1
++100099c2c: aa0303e4    	mov	x4, x3
++100099c30: 97ffeba4    	bl	0x100094ac0 <_fmt.Fprintln>
++100099c34: a97ffbfd    	ldp	x29, x30, [sp, #-8]
++100099c38: 911043ff    	add	sp, sp, #1040
++100099c3c: d65f03c0    	ret
++100099c40: aa1e03e3    	mov	x3, x30
++100099c44: 97ff422f    	bl	0x10006a500 <_runtime.morestack_noctxt.abi0>
++100099c48: 17ffffae    	b	0x100099b00 <_main.main>
++100099c4c: 00000000    	udf	#0
++
++0000000100099c50 <_runtime.etext>:
++100099c50: 00000000    	udf	#0
++
++Disassembly of section __TEXT,__symbol_stub1:
++
++0000000100099c60 <__symbol_stub1>:
++100099c60: f0000630    	adrp	x16, 0x100160000 <_runtime.rodata+0x9c>
++100099c64: f9409a11    	ldr	x17, [x16, #304]
++100099c68: d61f0220    	br	x17
++100099c6c: f0000630    	adrp	x16, 0x100160000 <_runtime.rodata+0xa8>
++100099c70: f9409e11    	ldr	x17, [x16, #312]
++100099c74: d61f0220    	br	x17
++100099c78: f0000630    	adrp	x16, 0x100160000 <_runtime.rodata+0xb4>
++100099c7c: f940a211    	ldr	x17, [x16, #320]
++100099c80: d61f0220    	br	x17
++100099c84: f0000630    	adrp	x16, 0x100160000 <_runtime.rodata+0xc0>
++100099c88: f940a611    	ldr	x17, [x16, #328]
++100099c8c: d61f0220    	br	x17
++100099c90: f0000630    	adrp	x16, 0x100160000 <_runtime.rodata+0xcc>
++100099c94: f940aa11    	ldr	x17, [x16, #336]
++100099c98: d61f0220    	br	x17
++100099c9c: f0000630    	adrp	x16, 0x100160000 <_runtime.rodata+0xd8>
++100099ca0: f940ae11    	ldr	x17, [x16, #344]
++100099ca4: d61f0220    	br	x17
++100099ca8: f0000630    	adrp	x16, 0x100160000 <_runtime.rodata+0xe4>
