@@ -7,9 +7,9 @@ NC := \033[0m # No Color
 BIN_DIR := bin
 TRACE_DIR := traces
 
-.PHONY: check-deps btree btreex all clean graph graphx codesign run
+.PHONY: check-deps btree btreex all clean graph graphx vmem vmemx codesign run
 
-all: check-deps btree btreex memaccess memaccessx graph graphx codesign
+all: check-deps btree btreex memaccess memaccessx graph graphx vmem vmemx codesign
 
 check-deps:
 	@for dep in $(REQUIRED_DEPS); do \
@@ -44,6 +44,14 @@ graph:
 graphx:
 	@echo "$(GREEN)Building graphx with experimental flag...$(NC)"
 	GOEXPERIMENT=greenteagc gotip build -o $(BIN_DIR)/graphx ./cmd/graph
+
+vmem:
+	@echo "$(GREEN)Building virtualmemory without experimental flag...$(NC)"
+	unset GOEXPERIMENT && go build -o $(BIN_DIR)/vmem ./cmd/virtualmemory
+
+vmemx:
+	@echo "$(GREEN)Building virtualmemory with experimental flag...$(NC)"
+	GOEXPERIMENT=greenteagc gotip build -o $(BIN_DIR)/vmemx ./cmd/virtualmemory
 
 # Codesign all files in bin directory except .gitkeep
 codesign:
