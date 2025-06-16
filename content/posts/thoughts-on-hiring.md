@@ -1,6 +1,6 @@
 +++
 date = '2025-06-14T16:03:09+04:00'
-draft = true
+draft = false
 title = 'Thought on hiring'
 description = 'How cognitive biases and low-validity environments sabotage hiring decisions and what we can do about it.'
 +++
