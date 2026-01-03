@@ -152,4 +152,7 @@ In C++ reference is "a pointer with restrictions." But the underlying implentati
 
 ## Conclusion
 
-"Under the hood, references are just pointers" is true at the assembly level. But it's a surface level understanding that misses the point. Pointers and references have different semantics, different rules about nullability, reassignment, and identity. Those rules matter when you're writing code, debugging, or reasoning about memory.
+Tsoding's point about memory leaks applies here too. Memory allocation is an artificial concept we built on top of how computers work and now we have to deal with "leaks" as a consequence. The same is true for pointers and references. We created these abstractions, and now we deal with the confusion they might cause.
+"Under the hood, references are just pointers" is true at the assembly level. But it's a surface level understanding. Pointers and references have different semantics different rules about nullability, reassignment, and identity. And those semantics change between languages. A reference in C++ is mutable. A reference in Rust is read-only by default. C and Go don't have references at all.
+
+If you move between languages and assume "reference" means the same thing everywhere, it can bite you.
