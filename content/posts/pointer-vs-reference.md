@@ -156,3 +156,45 @@ Tsoding's point about memory leaks applies here too. Memory allocation is an art
 "Under the hood, references are just pointers" is true at the assembly level. But it's a surface level understanding. Pointers and references have different semantics different rules about nullability, reassignment, and identity. And those semantics change between languages. A reference in C++ is mutable. A reference in Rust is read-only by default. C and Go don't have references at all.
 
 If you move between languages and assume "reference" means the same thing everywhere, it can bite you.
+
+### The mental model
+
+Everything is pass by value. Always.
+
+When you pass something:
+
+1. **Primitive (int, bool, etc):** Copy the value. Two independent values.
+2. **Pointer/reference to heap object:** Copy the address. Two independent pointers to same data.
+   - Dereference and mutate (`p.val = 5`, `obj.x = 5`) → affects shared data
+   - Reassign (`p = new`, `obj = new`) → only affects your local copy
+
+**C++ exception:**
+
+Has both. You choose per parameter:
+
+- `void foo(T x)` → copy (same as above)
+- `void foo(T* p)` → copy of pointer (same as above)
+- `void foo(T& r)` → alias, no copy, IS the caller's variable
+
+**The flowchart:**
+
+```
+Passing argument to function
+            |
+            v
+   Is it C++ reference (&T)?
+           /    \
+         yes     no
+          |       |
+          v       v
+      no copy    copy value into new local variable
+      (alias)               |
+                            v
+                  is it a pointer?
+                      /       \
+                    yes        no
+                     |          |
+                     v          v
+             two pointers    two independent
+             same data       values
+```
