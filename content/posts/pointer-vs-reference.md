@@ -163,14 +163,12 @@ Everything is pass by value. Always.
 
 When you pass something:
 
-1. **Primitive (int, bool, etc):** Copy the value. Two independent values.
-2. **Pointer/reference to heap object:** Copy the address. Two independent pointers to same data.
+1. Primitive types copy the value. Two independent values.
+2. Pointer/reference to heap object copy the address. Two independent pointers to same data.
    - Dereference and mutate (`p.val = 5`, `obj.x = 5`) → affects shared data
    - Reassign (`p = new`, `obj = new`) → only affects your local copy
 
-**C++ exception:**
-
-Has both. You choose per parameter:
+C++ has an exception
 
 - `void foo(T x)` → copy (same as above)
 - `void foo(T* p)` → copy of pointer (same as above)
